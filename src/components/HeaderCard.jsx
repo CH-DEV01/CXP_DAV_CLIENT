@@ -13,12 +13,9 @@ import { FaPlus } from 'react-icons/fa';
 const HeaderCard = ({ title, buttonText, onButtonClick, description, icon }) => {
   return (
     <div className="                             
-      p-4
-      pr-0                                           
-      flex flex-col md:flex-row 
-      justify-between           
-      items-center              
-      border-l-2 border-red-600 
+      p-4 pr-0 flex flex-col md:flex-row justify-between items-center              
+      border-l-2 border-red-500
+      relative overflow-hidden
     ">
       
       <div className="flex items-center mb-4 md:mb-0">
@@ -50,30 +47,12 @@ const HeaderCard = ({ title, buttonText, onButtonClick, description, icon }) => 
         </div>
       </div>
 
-      <button
-        onClick={onButtonClick}
-        className="
-          font-montserrat
-          flex items-center           
-          bg-red-600 hover:bg-red-700
-          text-white 
-          py-2 px-3                
-          rounded-md
-          font-medium
-          shadow-lg
-          hover:cursor-pointer 
-          transition duration-300 ease-in-out
-          focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 
-        "
-      >
-        <FaPlus className="mr-2" /> 
-        <span className="
-          text-xs                
-          font-montserrat
-        ">
-          Registrar {buttonText}
-        </span> 
-      </button>
+      <div className="absolute right-0 top-0 h-full overflow-hidden pointer-events-none">
+        {icon && React.cloneElement(icon, { 
+          className: "text-red-600/5 text-8xl -rotate-12 translate-x-1/20 translate-y-1/20" 
+        })}
+      </div>
+      
     </div>
   );
 };

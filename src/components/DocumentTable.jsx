@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
+import { FaCog, FaSearch,  FaBuilding, FaFile, FaTimes  } from 'react-icons/fa';
 
 const Table = ({ 
   columns, 
@@ -79,7 +80,7 @@ const Table = ({
 
                 {(onEdit || onDelete) && (
                   <td
-                    className="px-6 py-5 block md:table-cell text-right border-b md:border-none
+                    className="px-6 py-5 block md:table-cell text-center border-b md:border-none
                                md:space-x-2"
                   >
                     <span className="font-bold uppercase text-xs text-gray-500 float-left md:hidden">
@@ -91,19 +92,9 @@ const Table = ({
                         onClick={() => onEdit(item)}
                         className="p-2 rounded-md text-gray-500 hover:text-blue-600 hover:bg-gray-100 
                                    ml-4 md:ml-0 transition-colors"
-                        title="Modificar"
+                        title="Ver documentos"
                       >
-                        <FaPencilAlt />
-                      </button>
-                    )}
-                    {onDelete && (
-                      <button
-                        onClick={() => onDelete(item)}
-                        className="p-2 rounded-md text-gray-500 hover:text-red-600 hover:bg-gray-100 
-                                   ml-2 transition-colors"
-                        title="Eliminar"
-                      >
-                        <FaTrashAlt />
+                        <FaFile />
                       </button>
                     )}
                   </td>

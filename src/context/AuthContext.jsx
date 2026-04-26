@@ -3,8 +3,9 @@ import React from 'react';
 import axios from 'axios';
 import api from "../services/api";
 import { authService } from '../services/auth/authService';
-import { API_URL_PRODUCTION_AUTH } from "../constants/apiConstants";
-import { API_URL_DEVELOP_AUTH } from "../constants/apiConstants";
+import { API_URL_PRODUCTION_AUTH, API_URL_PRODUCTION } from "../constants/apiConstants";
+import { API_URL_DEVELOP, API_URL_DEVELOP_AUTH } from "../constants/apiConstants";
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 export const ROLES = {
     MANAGER: "MANAGER",
@@ -57,20 +58,53 @@ export const AuthProvider = ({ children }) => {
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [loginTime] = useState(null);
+    const [searchParams] = useSearchParams();
 
     const normalizeUserAuthorities = (apiData) => ({
         role: Object.values(ROLES).includes(apiData.ROLE) ? apiData.ROLE : ROLES.MANAGER,
         permissions: apiData.PERMISSIONS.filter(p => Object.values(PERMISSIONS).includes(p)),
     });
 
+    // Al cargar el componente se obtiene del sessionToken de los params
+
+    // useEffect(() => {
+    //     const sessionToken = searchParams.get('sessionToken')
+    //     alert(sessionToken);
+    //     if(!sessionToken){
+    //         setIsLoading(false);
+    //         return;
+    //     }
+    //     activateSession(sessionToken);
+    // }, [searchParams])
+
+    // const activateSession = async (sessionToken) => {
+    //     try{
+    //         const response = await axios.post('/activateSession', 
+    //             sessionToken, 
+    //             { 
+    //                 baseURL: "http://sv4148lap.daviviendasv.com:8181/APIFinanciamientoEmpresas/api/sso", 
+    //                 headers: { 'Content-Type': 'text/plain' }
+    //             }
+    //         );
+            
+    //         if (response.status !== 200) throw new Error("Login fallido");
+    //         await fetchUserAuthorities();
+
+    //     } catch (error){
+    //         throw error;
+    //     }
+    // }
+
     useEffect(() => {
         const checkSession = async () => {
             setIsLoading(true); 
             try {
                 const response = await axios.get('/validate-session', {
-                    baseURL: API_URL_DEVELOP_AUTH,
+                    baseURL: "http://localhost:8080",
                     withCredentials: true
                 });
+
+                console.log(response);
 
                 if (response.data === true) {
                     await fetchUserAuthorities(); 
@@ -93,6 +127,8 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await api.get('/users/user');
 
+            console.log(response);
+
             if (response.status !== 200) throw new Error("Sesión inválida");
 
             const apiData = {
@@ -113,7 +149,7 @@ export const AuthProvider = ({ children }) => {
         //setIsLoading(true); 
         try {
             const response = await axios.post('/login', payload, {
-                baseURL: API_URL_DEVELOP_AUTH,
+                baseURL: API_URL_DEVELOP,
                 withCredentials: true
             });
 
@@ -153,7 +189,7 @@ export const AuthProvider = ({ children }) => {
         } catch (err) {
             console.error('Error al cerrar sesión: ', err);
         } finally {
-            window.location.href = 'http://sv4106lap.daviviendasv.com/app/sso.nsf/api-open-app'
+            //window.location.href = 'http://sv4106lap.daviviendasv.com/app/sso.nsf/api-open-app'
         }
     };
 

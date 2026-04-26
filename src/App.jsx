@@ -11,8 +11,12 @@ import AgreementManagement from '../src/pages/admin/AgreementManagement';
 import PayerManagement from '../src/pages/admin/PayerManagement';
 import UserManagement from '../src/pages/admin/UserManagement';
 import ParamsManagement from './pages/admin/ParamsManagement';
+import PayerManagementAdmin from './pages/admin/PayerManagementAdmin';
 import UserManagement2 from '../src/pages/admin/UserManagement2';
+import UploadFilePageAdmin from './pages/admin/UploadFilePageAdmin';
 import UploadFilePage from './pages/admin/UploadFilePage';
+import EntityManagement from './pages/admin/EntityManagement';
+import ViewDocument from './pages/admin/ViewDocument';
 
 // PAYER
 import ApproveDocuments from '../src/pages/payer/ApproveDocumentsV2';
@@ -31,14 +35,15 @@ import SelectAgreementToStart from '../src/pages/shared-pages/SelectAgreementToS
 // PUBLIC
 import Login from '../src/pages/auth/Login';
 import Layout from '../src/components/layouts/MainLayout';
-import UploadFilePageAuthTwo from './pages/admin/UploadFilePageAuthTwo';
+import DocumentManagement from './pages/admin/DocumentManagement';
+//import UploadFilePageAuthTwo from './pages/admin/UploadFilePageAuthTwo';
 
 const ProtectedRoute = ({ allowedRoles, requiredPermissions = [] }) => {
   
   const { user, isLoading } = useAuth();
 
   if ( !user && !isLoading ) {
-    window.location.replace("http://sv4106lap.daviviendasv.com/app/sso.nsf/api-open-app");
+    //window.location.replace("http://sv4106lap.daviviendasv.com/app/sso.nsf/");
   }
     
   const hasRole = allowedRoles.includes(user.role);
@@ -55,7 +60,7 @@ const DynamicRedirect = () => {
 
   // if( !user && !isLoading ) return <Navigate to="/login" replace />; 
   if ( !user ) {
-    window.location.replace("http://sv4106lap.daviviendasv.com/app/sso.nsf/api-open-app");
+    //window.location.replace("http://sv4106lap.daviviendasv.com/app/sso.nsf/");
   }
 
   switch (user.role) {
@@ -92,11 +97,13 @@ const AppContent = () => {
         <Route path="admin" element={<Layout />}>
           <Route index element={<Menu />} />
           <Route path="agreement-management" element={<AgreementManagement />} />
-          <Route path="payer-management" element={<PayerManagement />} />
+          <Route path="supplier-management" element={<EntityManagement />} />
+          <Route path="payer-management-admin" element={<PayerManagementAdmin />} />
           <Route path="user-management" element={<UserManagement2 />} />
           <Route path="params-management" element={<ParamsManagement />} />
-          <Route path="upload-file" element={<UploadFilePage />} />
-          <Route path="documents-history" element={<DocumentLog />} />
+          <Route path="upload-file-admin" element={<UploadFilePageAdmin/>} />
+          <Route path="documents-history" element={<DocumentManagement />} />
+          <Route path="view-documents/:id" element={<ViewDocument />} />
         </Route>
       </Route>
 
@@ -141,7 +148,7 @@ const AppContent = () => {
 
 function App() {
   return (
-    <BrowserRouter basename="/fincxp">
+    <BrowserRouter basename="/financiamientocuentasporpagar/">
       <AuthProvider>
         <AgreementProvider>
           <AppContent />

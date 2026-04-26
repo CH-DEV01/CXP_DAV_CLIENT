@@ -213,8 +213,8 @@ const SelectDocuments = () => {
     const calculateNextFriday = useCallback(() => {
         const today = new Date();
         const nextFriday = new Date(today);
-        nextFriday.setDate(today.getDate() + 1);
-        //nextFriday.setDate(today.getDate() + (5 - today.getDay() + 7) % 7);
+        //nextFriday.setDate(today.getDate() + 1);
+        nextFriday.setDate(today.getDate() + (5 - today.getDay() + 7) % 7);
         setDisbursementDate(nextFriday);
         return nextFriday;
     }, []);

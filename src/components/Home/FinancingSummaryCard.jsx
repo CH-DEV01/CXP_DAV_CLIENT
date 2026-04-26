@@ -11,7 +11,7 @@ const FinancingSummaryCard = ({
 
                 <div className="flex items-center justify-between w-full mb-4">
                    
-                    <h2 className="text-md font-bold mb-4 text-gray-800 w-full">Total a financiar</h2>
+                    <h2 className="text-md font-bold mb-4 text-gray-800 w-full">Monto total a financiar</h2>
                 
                     <h2 className="text-sm mb-4 text-gray-800 w-full text-end">$ {totalAmount}</h2>
            

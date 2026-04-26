@@ -1,22 +1,15 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Table from "../../components/Table"; 
 import HeaderCard from "../../components/HeaderCard";
 import { FaCog, FaSearch } from 'react-icons/fa';
 import Modal from "../../components/Modal"
+import { parametersService } from "../../services/admin/parameterService";
+import Swal from 'sweetalert2';
+import { FaPlus } from 'react-icons/fa';
 
 const columns = [
-    { header: 'Clave', accessor: 'key' },
-    { header: 'Valor', accessor: 'value' },
-    { header: 'Descripción', accessor: 'description' }
-];
-
-const mockData = [
-    { id: 1, key: 'MAX_UPLOAD_SIZE_MB', value: '25', description: 'Tamaño máximo de subida de archivos (en MB).', category: 'uploads' },
-    { id: 2, key: 'MAINTENANCE_MODE', value: 'false', description: 'Pone el sitio en modo mantenimiento.', category: 'system' },
-    { id: 3, key: 'SESSION_TIMEOUT_MINS', value: '30', description: 'Minutos de inactividad para expirar sesión.', category: 'security' },
-    { id: 4, key: 'DEFAULT_CURRENCY', value: 'USD', description: 'Moneda por defecto del sistema.', category: 'system' },
-    { id: 5, key: 'ALLOW_FILE_TYPES', value: '.pdf,.jpg,.png', description: 'Tipos de archivo permitidos.', category: 'uploads' },
-    { id: 6, key: 'ENABLE_2FA', value: 'true', description: 'Habilitar autenticación de dos factores.', category: 'security' },
+    { header: 'Clave', accessor: 'param_key' },
+    { header: 'Valor', accessor: 'param_value' }
 ];
 
 const filters = [
@@ -28,6 +21,8 @@ const filters = [
 
 const ParamsManagement = () => {
 
+    const [ parameters, setParameters ] = useState([]);
+
     const ITEMS_PER_PAGE = 5; 
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,15 +30,110 @@ const ParamsManagement = () => {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [activeFilter, setActiveFilter] = useState('all'); 
-    const [currentPage, setCurrentPage] = useState(1); 
+    const [currentPage, setCurrentPage] = useState(1);
+
+    // Lógica para carga la data al inicializar el componente
+    useEffect(() => {
+        const fetchParams = async () => {
+            try {
+                const response = await parametersService.getParameters();
+                if (response.status === 200) {
+                    setParameters(response.data);
+                    console.log(response.data)
+                } else {
+                    console.error('Error fetching params:', response.statusText);
+                    setParameters([]);
+                }
+            } catch (error) {
+                console.error('Error fetching params:', error);
+                setParameters([]);
+            }
+        };
+        fetchParams();
+    }, []);
+
+    // -----------------------------------------
+
+    // Lógica del modal
+
+    const [ formData, setFormData ] = useState({
+        param_key: '',
+        param_value: '',
+        description: '',
+        category: 'system'
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSave = async () => {
+
+        Swal.fire({
+            title: 'Procesando...',
+            text: 'Guardando los cambios, por favor espere.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+
+            if (editingParam) {
+                await parametersService.updateParameter(editingParam.id, formData);
+            } else {
+                await parametersService.createParameter(formData);
+            }
+        
+            Swal.fire({
+                icon: 'success',
+                title: '¡Éxito!',
+                text: editingParam ? 'Parámetro actualizado correctamente.' : 'Parámetro creado con correctamente.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            const response = await parametersService.getParameters();
+            setParameters(response.data);
+            handleCloseModal();
+
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo guardar la información. Intenta de nuevo.',
+            });
+            console.error("Error al procesar la petición", error);
+        }
+    };
 
     const handleCreate = () => {
         setEditingParam(null); 
+        setFormData({      
+            param_key: '',
+            param_value: '',
+            description: '',
+            category: ''
+        });
         setIsModalOpen(true);
     };
 
     const handleEdit = (param) => {
-        setEditingParam(param); 
+
+        setEditingParam(param);
+
+        setFormData({
+            param_key: param.param_key || '',
+            param_value: param.param_value || '',
+            description: param.description || '',
+            category: param.category || ''
+        });
+
         setIsModalOpen(true);
     };
 
@@ -51,36 +141,86 @@ const ParamsManagement = () => {
         setIsModalOpen(false);
         setEditingParam(null); 
     };
-    
-    const handleSave = () => {
-        if (editingParam) {
-            console.log("Guardando cambios de:", editingParam);
-        } else {
-            console.log("Guardando nuevo parámetro...");
+
+    const handleDelete = async (param) => {
+
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Eliminarás "${param.param_key}". Esta operación no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626', 
+            cancelButtonColor: '#4b5563', 
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true 
+        });
+
+        if (result.isConfirmed) {
+
+            Swal.fire({
+                title: 'Eliminando...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+
+                const response = await parametersService.deleteParameter(param.id);
+
+                if (response.status === 204) {
+
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'El parámetro ha sido removido del sistema.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+
+                    const updatedList = await parametersService.getParameters();
+                    setParameters(updatedList.data);
+                }
+            } catch (error) {
+
+                console.error("Error al eliminar:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No pudimos conectar con el servidor para eliminar el registro.',
+                    confirmButtonColor: '#dc2626'
+                });
+
+            }
         }
-        handleCloseModal(); 
     };
 
-    const handleDelete = (param) => console.log("Eliminando:", param);
+    // -----------------------------------------
+
+    // Lógica de filtrado de la tabla y paginación
 
     const filteredData = useMemo(() => {
-
-        let data = mockData;
+      
+        let data = Array.isArray(parameters) ? [...parameters] : [];
 
         if (activeFilter !== 'all') {
             data = data.filter(item => item.category === activeFilter);
         }
 
+        // Sobre el resultado anterior, aplicamos la búsqueda
         if (searchTerm) {
-            data = data.filter(item =>
-                item.key.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.value.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.description.toLowerCase().includes(searchTerm.toLowerCase())
+            const lowSearch = searchTerm.toLowerCase();
+            data = data.filter(item => 
+                (item.param_key?.toLowerCase() || "").includes(lowSearch) ||
+                (item.param_value?.toLowerCase() || "").includes(lowSearch) ||
+                (item.description?.toLowerCase() || "").includes(lowSearch)
             );
         }
         
         return data;
-    }, [searchTerm, activeFilter]);
+    }, [searchTerm, activeFilter, parameters]);
 
     const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
@@ -90,9 +230,10 @@ const ParamsManagement = () => {
         return filteredData.slice(startIndex, endIndex);
     }, [filteredData, currentPage]);
 
+    // -----------------------------------------
 
     return (
-        <div>
+        <div className="w-full min-h-screen">
             <HeaderCard
                 title={"Gestion de parametros"}
                 buttonText={"parámetro"}
@@ -106,11 +247,11 @@ const ParamsManagement = () => {
             <div className=" 
               flex flex-col md:flex-row 
               items-center 
-              justify-between 
+              justify-between
               gap-4
               
             ">
-                <div className="flex flex-wrap items-center justify-end gap-2">
+                {/* <div className="flex flex-wrap items-center justify-end gap-2">
                     {filters.map(filter => (
                         <button
                             key={filter.id}
@@ -132,12 +273,11 @@ const ParamsManagement = () => {
                             {filter.name}
                         </button>
                     ))}
-                </div>
-                <div className="relative w-full md:w-1/3 shadow-lg rounded-full"> 
+                </div> */}
+                <div className="relative w-1/3 shadow-lg rounded-full"> 
                     <input
                         type="text"
-                        placeholder="Buscar parámetro por nombre, valor ó descripción"
-                        placeholder:text-xs
+                        placeholder="Buscar en el sistema por clave o valor"
                         value={searchTerm}
                         onChange={(e) => {
                             setSearchTerm(e.target.value);
@@ -158,6 +298,30 @@ const ParamsManagement = () => {
                         <FaSearch className="text-gray-400" />
                     </div>
                 </div>
+                <button
+                    onClick={handleCreate}
+                    className="
+                    font-montserrat
+                    flex items-center           
+                    bg-red-600 hover:bg-red-700
+                    text-white 
+                    py-2 px-6                
+                    rounded-md
+                    font-medium
+                    shadow-lg
+                    hover:cursor-pointer 
+                    transition duration-300 ease-in-out
+                    focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 
+                    "
+                >
+                    <FaPlus className="mr-2" /> 
+                    <span className="
+                    text-xs                
+                    font-montserrat
+                    ">
+                    Registrar parametro
+                    </span> 
+                </button>               
             </div>
 
             {/* <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div> */}
@@ -199,7 +363,7 @@ const ParamsManagement = () => {
                               hover:cursor-pointer
                             "
                         >
-                            {editingParam ? "Guardar Cambios" : "Guardar"}
+                            {editingParam ? "Guardar cambios" : "Guardar"}
                         </button>
                     </>
                 }
@@ -210,8 +374,10 @@ const ParamsManagement = () => {
                             Clave (Key)
                         </label>
                         <input
+                            name="param_key"
+                            value={formData.param_key}
+                            onChange={handleChange}
                             type="text"
-                            defaultValue={editingParam?.key || ''}
                             className="
                               w-full px-3 py-2 border border-gray-300 rounded-lg 
                               focus:outline-none focus:ring-2 focus:ring-red-300 text-xs font-montserrat
@@ -223,8 +389,10 @@ const ParamsManagement = () => {
                             Valor (Value)
                         </label>
                         <input
+                            name="param_value"
+                            value={formData.param_value}
+                            onChange={handleChange}
                             type="text"
-                            defaultValue={editingParam?.value || ''}
                             className="
                               w-full px-3 py-2 border border-gray-300 rounded-lg 
                               focus:outline-none focus:ring-2 focus:ring-red-300 text-xs font-montserrat
@@ -236,8 +404,10 @@ const ParamsManagement = () => {
                             Descripción
                         </label>
                         <textarea
+                            name="description"
+                            value={formData.description}
+                            onChange={handleChange}
                             rows={3}
-                            defaultValue={editingParam?.description || ''}
                             className="
                               w-full px-3 py-2 border border-gray-300 rounded-lg 
                               focus:outline-none focus:ring-2 focus:ring-red-300 text-xs font-montserrat

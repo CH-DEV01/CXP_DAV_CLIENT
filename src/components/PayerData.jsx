@@ -82,15 +82,14 @@ const DataItem = ({ icon, label, value }) => {
   );
 };
 
-const PayerData = ({nit, bankAccount, email, code, entityName}) => {
+const PayerData = ({paymentPolicy, bankAccount, email, code, entityName}) => {
 
   return (
     <div className="bg-white rounded-lg shadow-lg font-montserrat max-w-lg mx-auto p-6">
       
       <div className="pb-4 border-b border-gray-200 text-center">
         <h2 className="font-montserrat text-sm font-bold text-gray-900">
-            {/* {entityName} */}
-            AEROMAN
+            {entityName}
         </h2>
       </div>
 
@@ -100,8 +99,8 @@ const PayerData = ({nit, bankAccount, email, code, entityName}) => {
         <DataItem
           icon={<IconNit />}
           label="Política de pago"
-//           value={nit}
-          value="60 días"
+          value={paymentPolicy}
+          // value="60 días"
         />      
       </div>
     </div>

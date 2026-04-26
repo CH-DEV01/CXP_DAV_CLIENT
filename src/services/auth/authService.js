@@ -34,8 +34,19 @@ const getUsers = async () => {
     }
 }
 
+const activateSession = async (token) => {
+    try {
+        const response = await api.post('/sso/activateSession', token);
+        return response;
+    } catch (error) {
+        console.error('Failed to activate session', error);
+        throw error;
+    }
+}
+
 export const authService = {
     getRoles,
     linkUser,
     getUsers,
+    activateSession
 };

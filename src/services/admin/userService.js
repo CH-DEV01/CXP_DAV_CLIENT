@@ -1,7 +1,7 @@
 import api from "../api";
 
 // CREATE
-export const createParameter = async (payload) => {
+export const createUser = async (payload) => {
     try {
 
         const data = {
@@ -9,7 +9,7 @@ export const createParameter = async (payload) => {
             "param_value": payload.param_value
         }
 
-        const response = await api.post('/parameters', data);
+        const response = await api.post('/users/getAllUsers', data);
         return response;
 
     } catch (error) {
@@ -21,19 +21,30 @@ export const createParameter = async (payload) => {
 }
 
 // READ ALL
-export const getEntities = async () => {
-    try {
 
-        const response = await api.get('/entities/all');
+const getUsers = async () => {
+    try {
+        const response = await api.get('/users/getAllUsers');
         return response;
     } catch (error) {
-        console.error('Error fetching entities:', error);
+        console.error('Failed to fetch users:', error);
+        throw error;
+    }
+}
+
+export const getParameters = async () => {
+    try {
+
+        const response = await api.get('/parameters');
+        return response;
+    } catch (error) {
+        console.error('Error fetching Paramters:', error);
         throw error;
     }
 }
 
 // UPDATE
-export const updateParameter = async (id, payload) => {
+export const updateUser = async (id, payload) => {
     try {
 
         const data = {
@@ -54,7 +65,7 @@ export const updateParameter = async (id, payload) => {
 }
 
 // DELETE
-export const deleteParameter = async (id) => {
+export const deleteUser = async (id) => {
     try {
 
         const response = await api.delete(`/parameters/${id}`);
@@ -69,30 +80,9 @@ export const deleteParameter = async (id) => {
     }
 }
 
-export const parametersService = {
-
-};
-
-
-const getEntityById = async (entityId) => {
-
-    try {
-        const response = await api.get(`/entities/${entityId}`, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        return response;
-    } catch (error) {
-        console.error("Error getting entity:", error);
-        throw error;
-    }
-}
-
-export const entityService = {
-    createParameter,
-    getEntities,
-    updateParameter,
-    deleteParameter,
-    getEntityById
+export const userService = {
+    createUser,
+    getUsers,
+    updateUser,
+    deleteUser
 };

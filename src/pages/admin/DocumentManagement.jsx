@@ -1,19 +1,19 @@
 import React, { useState, useMemo, useEffect } from "react";
-import Table from "../../components/Table"; 
+import Table from "../../components/DocumentTable"; 
 import HeaderCard from "../../components/HeaderCard";
-import { FaCog, FaSearch } from 'react-icons/fa';
+import { FaCog, FaSearch,  FaBuilding, FaFile, FaTimes, FaClock  } from 'react-icons/fa';
 import Modal from "../../components/Modal"
-import { userService } from "../../services/admin/userService";
 import { entityService } from "../../services/admin/entityService";
-import { roleService } from "../../services/admin/roleService";
 import Swal from 'sweetalert2';
-import { FaPlus, FaUsers } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
+import { useNavigate } from "react-router-dom";
 
 const columns = [
-    { header: 'DUI', accessor: 'dui' },
+    { header: 'CODIGO', accessor: 'code' },
     { header: 'NOMBRE', accessor: 'name' },
-    { header: 'ENTIDAD', accessor: 'entityName' },
-    { header: 'ROL', accessor: 'roleName' }
+    { header: 'NIT', accessor: 'nit' },
+    { header: 'POLITICA DE PAGO', accessor: 'paymentPolicy' },
+    { header: 'E-MAIL', accessor: 'email' }
 ];
 
 const filters = [
@@ -23,11 +23,11 @@ const filters = [
     { id: 'uploads', name: 'Carga de archivos' }
 ];
 
-const UserManagement2 = () => {
+const DocumentManagement = () => {
 
-    const [ users, setUsers ] = useState([]);
+    const navigate = useNavigate();
+
     const [ entities, setEntities ] = useState([]);
-    const [ roles, setRoles ] = useState([]);
 
     const ITEMS_PER_PAGE = 5; 
 
@@ -38,68 +38,28 @@ const UserManagement2 = () => {
     const [activeFilter, setActiveFilter] = useState('all'); 
     const [currentPage, setCurrentPage] = useState(1);
 
-    // Lógica para cargar la data al inicializar el componente
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const response = await userService.getUsers();
-                if (response.status === 200) {
-                    setUsers(response.data);
-                    console.log(response.data)
-                } else {
-                    console.error('Error fetching params:', response.statusText);
-                    setUsers([]);
-                }
-            } catch (error) {
-                console.error('Error fetching params:', error);
-                setUsers([]);
-            }
-        };
-        fetchUsers();
-    }, []);
-
-    // -----------------------------------------
-
-    // Lógica para cargar la data de las entidades
+    // Lógica para carga la data al inicializar el componente
     useEffect(() => {
         const fetchEntities = async () => {
             try {
                 const response = await entityService.getEntities();
                 if (response.status === 200) {
-                    setEntities(response.data);
-                    console.log(response.data)
+                    //setEntities(response.data);
+                    const suppliers = response.data.filter((entity) => {
+                        return !entity.entityType;
+                    })
+                    setEntities(suppliers);
+                    console.log(suppliers);
                 } else {
-                    console.error('Error fetching entities:', response.statusText);
+                    console.error('Error fetching params:', response.statusText);
                     setEntities([]);
                 }
             } catch (error) {
-                console.error('Error fetching entities:', error);
+                console.error('Error fetching params:', error);
                 setEntities([]);
             }
         };
         fetchEntities();
-    }, []);
-
-    // -----------------------------------------
-
-    // Lógica para cargar la data de los roles
-    useEffect(() => {
-        const fetchRoles = async () => {
-            try {
-                const response = await roleService.getRoles();
-                if (response.status === 200) {
-                    setRoles(response.data);
-                    console.log(response.data)
-                } else {
-                    console.error('Error fetching roles:', response.statusText);
-                    setRoles([]);
-                }
-            } catch (error) {
-                console.error('Error fetching roles:', error);
-                setRoles([]);
-            }
-        };
-        fetchRoles();
     }, []);
 
     // -----------------------------------------
@@ -109,10 +69,7 @@ const UserManagement2 = () => {
     const [ formData, setFormData ] = useState({
         dui: '',
         name: '',
-        email: '',
-        entityId: '',
         entityName: '',
-        roleId: '',
         roleName: ''
     });
 
@@ -138,9 +95,9 @@ const UserManagement2 = () => {
         try {
 
             if (editingParam) {
-                await userService.updateParameter(editingParam.id, formData);
+                await entitieservice.updateParameter(editingParam.id, formData);
             } else {
-                await userService.createParameter(formData);
+                await entitieservice.createParameter(formData);
             }
         
             Swal.fire({
@@ -151,8 +108,8 @@ const UserManagement2 = () => {
                 showConfirmButton: false
             });
 
-            const response = await usersService.getusers();
-            setUsers(response.data);
+            const response = await entitiesService.getentities();
+            setEntities(response.data);
             handleCloseModal();
 
         } catch (error) {
@@ -192,6 +149,12 @@ const UserManagement2 = () => {
         setIsModalOpen(true);
     };
 
+    const handleViewDocuments = (param) => {
+
+        navigate(`/admin/view-documents/${param.id}`);
+
+    };
+
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingParam(null); 
@@ -223,7 +186,7 @@ const UserManagement2 = () => {
 
             try {
 
-                const response = await usersService.deleteParameter(param.id);
+                const response = await entitiesService.deleteParameter(param.id);
 
                 if (response.status === 204) {
 
@@ -235,8 +198,8 @@ const UserManagement2 = () => {
                         showConfirmButton: false
                     });
 
-                    const updatedList = await usersService.getusers();
-                    setUsers(updatedList.data);
+                    const updatedList = await entitiesService.getentities();
+                    setEntities(updatedList.data);
                 }
             } catch (error) {
 
@@ -258,19 +221,19 @@ const UserManagement2 = () => {
 
     const filteredData = useMemo(() => {
       
-        let data = Array.isArray(users) ? [...users] : [];
+        let data = Array.isArray(entities) ? [...entities] : [];
 
         if (searchTerm) {
             const lowSearch = searchTerm.toLowerCase();
             data = data.filter(item => 
-                (item.param_key?.toLowerCase() || "").includes(lowSearch) ||
-                (item.param_value?.toLowerCase() || "").includes(lowSearch) ||
-                (item.description?.toLowerCase() || "").includes(lowSearch)
+                (item.name?.toLowerCase() || "").includes(lowSearch) ||
+                (item.code?.toLowerCase() || "").includes(lowSearch) ||
+                (item.email?.toLowerCase() || "").includes(lowSearch)
             );
         }
         
         return data;
-    }, [searchTerm, activeFilter, users]);
+    }, [searchTerm, activeFilter, entities]);
 
     const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
@@ -284,21 +247,12 @@ const UserManagement2 = () => {
 
     return (
         <div className="w-full min-h-screen">
-            <HeaderCard
-                title={"Gestion de usuarios"}
-                buttonText={"usuario"}
-                onButtonClick={handleCreate}
-                description={"Administre los usuarios registrados en el sistema"}
-                icon={<FaUsers />}
-            />
-
-            <div className="border-b border-gray-200 mb-4"></div>
 
             <div className=" 
               flex flex-col md:flex-row 
               items-center 
               justify-between
-              gap-4
+              gap-8
               
             ">
                 {/* <div className="flex flex-wrap items-center justify-end gap-2">
@@ -324,10 +278,10 @@ const UserManagement2 = () => {
                         </button>
                     ))}
                 </div> */}
-                <div className="relative w-1/3 shadow-lg rounded-full"> 
+                {/* <div className="relative w-1/3 shadow-lg rounded-full justify-center items-center flex"> 
                     <input
                         type="text"
-                        placeholder="Buscar usuario en el sistema por DUI o nombre"
+                        placeholder="Buscar en el sistema por código o nombre"
                         value={searchTerm}
                         onChange={(e) => {
                             setSearchTerm(e.target.value);
@@ -342,36 +296,68 @@ const UserManagement2 = () => {
                             bg-white 
                             focus:outline-none focus:ring-2 focus:ring-red-300 
                             text-sm
+                            
                         "
                     />
                     <div className="absolute left-3 top-1/2 -translate-y-1/2">
                         <FaSearch className="text-gray-400" />
                     </div>
+                </div>  */}
+
+                <div className="w-1/2">
+                    <HeaderCard
+                        title={"CICLO DE VIDA DE DOCUMENTOS FINANCIADOS"}
+                        buttonText={"entidad"}
+                        onButtonClick={handleCreate}
+                        description={"Seleccione un proveedor para administrar sus documentos"}
+                        icon={<FaClock />}
+                    />
                 </div>
-                <button
-                    onClick={handleCreate}
-                    className="
-                    font-montserrat
-                    flex items-center           
-                    bg-red-600 hover:bg-red-700
-                    text-white 
-                    py-2 px-6                
-                    rounded-md
-                    font-medium
-                    shadow-lg
-                    hover:cursor-pointer 
-                    transition duration-300 ease-in-out
-                    focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 
-                    "
-                >
-                    <FaPlus className="mr-2" /> 
-                    <span className="
-                    text-xs                
-                    font-montserrat
-                    ">
-                    Registrar usuario
-                    </span> 
-                </button>               
+
+                <div className="border-b border-gray-200 mb-4"></div>
+                 
+                <div className="relative w-full sm:w-1/2 group"> 
+                    {/* Ícono de búsqueda: Cambia de color cuando el input está enfocado */}
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:text-red-500 transition-colors duration-300">
+                        <FaSearch size={16} />
+                    </div>
+
+                    <input
+                        type="text"
+                        placeholder="Buscar proveedor"
+                        value={searchTerm}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setCurrentPage(1); 
+                        }}
+                        className="
+                            w-full pl-11 pr-10 py-2.5
+                            text-sm text-gray-700 
+                            placeholder:text-gray-400 placeholder:text-xs placeholder:font-montserrat
+                            bg-gray-50 hover:bg-gray-100 focus:bg-white
+                            border border-gray-200 focus:border-red-400
+                            rounded-full
+                            outline-none
+                            shadow-sm focus:shadow-md
+                            transition-all duration-300 ease-in-out
+                            focus:ring-4 focus:ring-red-500/15
+                        "
+                    />
+
+                    {/* Botón de limpiar (Clear button): Solo aparece si el usuario ha escrito algo */}
+                    {searchTerm && (
+                        <button
+                            onClick={() => {
+                                setSearchTerm('');
+                                setCurrentPage(1);
+                            }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-all duration-200 focus:outline-none"
+                            aria-label="Limpiar búsqueda"
+                        >
+                            <FaTimes size={14} />
+                        </button>
+                    )}
+                </div>             
             </div>
 
             {/* <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div> */}
@@ -380,7 +366,7 @@ const UserManagement2 = () => {
                 <Table
                     columns={columns}
                     data={paginatedData}
-                    onEdit={handleEdit} 
+                    onEdit={handleViewDocuments} 
                     onDelete={handleDelete}
                     currentPage={currentPage}
                     totalPages={totalPages}
@@ -421,11 +407,11 @@ const UserManagement2 = () => {
                 <form className="space-y-4">
                     <div>
                         <label className="block text-xs text-gray-600 mb-2">
-                            Nombre
+                            Clave (Key)
                         </label>
                         <input
-                            name="name"
-                            value={formData.name}
+                            name="param_key"
+                            value={formData.param_key}
                             onChange={handleChange}
                             type="text"
                             className="
@@ -436,11 +422,11 @@ const UserManagement2 = () => {
                     </div>
                     <div>
                         <label className="block text-xs text-gray-600 mb-2">
-                            e-mail
+                            Valor (Value)
                         </label>
                         <input
-                            name="email"
-                            value={formData.email}
+                            name="param_value"
+                            value={formData.param_value}
                             onChange={handleChange}
                             type="text"
                             className="
@@ -451,62 +437,18 @@ const UserManagement2 = () => {
                     </div>
                     <div>
                         <label className="block text-xs text-gray-600 mb-2">
-                            DUI
+                            Descripción
                         </label>
-                        <input
-                            name="dui"
-                            value={formData.dui}
+                        <textarea
+                            name="description"
+                            value={formData.description}
                             onChange={handleChange}
-                            type="text"
+                            rows={3}
                             className="
                               w-full px-3 py-2 border border-gray-300 rounded-lg 
                               focus:outline-none focus:ring-2 focus:ring-red-300 text-xs font-montserrat
                             "
                         />
-                    </div>
-                    <div>
-                        <label className="block text-xs text-gray-600 mb-2">
-                            Entidad
-                        </label>
-                        <select
-                            name="entityName" 
-                            value={formData.entityId}
-                            onChange={handleChange}
-                            className="
-                            w-full px-3 py-2 border border-gray-300 rounded-lg 
-                            focus:outline-none focus:ring-2 focus:ring-red-300 text-xs font-montserrat
-                            bg-white
-                            "
-                        >
-                            <option value="">Seleccione una entidad</option>
-                            {entities.map((entity) => (
-                            <option key={entity.id} value={entity.id}>
-                                {entity.name}
-                            </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-xs text-gray-600 mb-2">
-                            Rol
-                        </label>
-                        <select
-                            name="roleName" 
-                            value={formData.roleId}
-                            onChange={handleChange}
-                            className="
-                            w-full px-3 py-2 border border-gray-300 rounded-lg 
-                            focus:outline-none focus:ring-2 focus:ring-red-300 text-xs font-montserrat
-                            bg-white
-                            "
-                        >
-                            <option value="">Seleccione un rol</option>
-                            {roles.map((role) => (
-                            <option key={role.role_id} value={role.role_id}>
-                                {role.roleName}
-                            </option>
-                            ))}
-                        </select>
                     </div>
                 </form>
             </Modal>
@@ -514,4 +456,4 @@ const UserManagement2 = () => {
     )
 }
 
-export default UserManagement2;
+export default DocumentManagement;

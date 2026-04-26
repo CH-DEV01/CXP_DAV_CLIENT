@@ -4,15 +4,15 @@ import { API_URL_DEVELOP } from "../constants/apiConstants";
 
 axios.defaults.withCredentials = true;
 
-// const api = axios.create({
-//     baseURL: API_URL_PRODUCTION,
-//     withCredentials: true
-// });
-
 const api = axios.create({
     baseURL: API_URL_DEVELOP,
-    withCredentials: true, 
+    withCredentials: true
 });
+
+// const api = axios.create({
+//     baseURL: API_URL_DEVELOP,
+//     withCredentials: true, 
+// });
 
 export default api;
 

@@ -24,7 +24,7 @@ const ItemsSelectedCard = ({ accountsPayable }) => {
                                 <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de emisión</th>
                                 <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de vencimiento</th>
                                 <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Días de financiamiento</th>
-                                <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto a financiar</th>
+                                <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto de la factura</th>
                                 <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intereses</th>
                                 <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comisión</th>
                           </tr>
@@ -42,7 +42,7 @@ const ItemsSelectedCard = ({ accountsPayable }) => {
                                         {item.financingDays}
                                     </td>
                                     <td className="w-1/4 px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        $ {formatNumber(item.amountToFinance)}
+                                        $ {formatNumber(item.amount)}
                                     </td>
                                     <td className="w-1/4 px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         $ {formatNumber(item.interests || 0)}

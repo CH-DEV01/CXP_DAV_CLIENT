@@ -1,21 +1,15 @@
 import React from "react"; 
-import { FaDollarSign, FaChartLine, FaClipboardList, FaUsers, FaCog } from 'react-icons/fa';
+import { FaDollarSign, FaChartLine, FaClipboardList, FaUsers, FaCog, FaBuilding, FaUniversity } from 'react-icons/fa';
 import { useNavigate } from "react-router-dom";
 import WelcomeBannerCard from "../../components/Home/WelcomeBannerCard.jsx";
 import { useAuth } from '../../context/AuthContext.jsx';
 
 const menuItems = [
     {
-        id: 'upload-file',
+        id: 'upload-file-admin',
         icon: FaClipboardList,
         title: 'Carga de documentos',
         description: 'Sube y gestiona los documentos clave de tu operación.',
-    },
-    {
-        id: 'agreement-management',
-        icon: FaDollarSign,
-        title: 'Gestión de órdenes de pago',
-        description: 'Supervisa y administra las órdenes de pago en cada etapa.',
     },
     {
         id: 'user-management',
@@ -23,6 +17,24 @@ const menuItems = [
         title: 'Gestión de usuarios',
         description: 'Controla los usuarios vinculados y sus permisos en la plataforma.',
     },
+    {
+        id: 'payer-management-admin',
+        icon: FaUniversity,
+        title: 'Gestión de pagadores',
+        description: 'Controla los pagadores vinculados en la plataforma.',
+    },
+    {
+        id: 'supplier-management',
+        icon: FaBuilding,
+        title: 'Gestión de proveedores',
+        description: 'Controla los proveedores vinculados en la plataforma.',
+    },
+    // {
+    //     id: 'agreement-management',
+    //     icon: FaDollarSign,
+    //     title: 'Gestión de órdenes de pago',
+    //     description: 'Supervisa y administra las órdenes de pago en cada etapa.',
+    // },
     {
         id: 'params-management',
         icon: FaCog,
